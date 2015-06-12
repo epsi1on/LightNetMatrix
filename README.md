@@ -9,9 +9,9 @@ Matrix m = RandomMatrix(5, 6);   // creates a new 5x6 matrix ( 5 row and 6 colum
 m[3, 4] = 1.23;                  // sets the member at 3'rd row and 4'th column to 1.23
 Matrix inv = m.Inverse();        // computes inverse of m into inv
 double det = m.Determinant();    // computes determinant of m into det
-
-        
 ```
+
+All you have to do is to copy code inside [Matrix.cs file](/LightNetMatrix/Matrix.cs) into your codes and go!
 
 #Features
 - Reasonable Performance
