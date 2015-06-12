@@ -1,2 +1,18 @@
 # LightNetMatrix
-A simple, lightweight and fast double matrix for .NET
+A simple, lightweight and fast mass double matrix for .NET. All codes are packed inside a single class in single .cs file which makes it simply possible to include it into your C# code.
+
+#Features
+- Reasonable Performance
+- Determinant of square Matrix
+- Both Inverse and Transpose of square matrix.
+- Cholesky decomposition of matrix.
+- Multyply, plus and minus operations overloaded.
+- Compatible with .NET Portable framework.
+- CLS Compliant.
+- Serializable (both xml and binary)
+
+#Performance
+Because of using one dimensional array for storing data, performance is far higher than 2d array in .NET and is somehow around jagged array. Anyways time consuming parts (like inverse and determinant) are not highly optimized for performance. On a i7 pc inverse of matrix of 300x300 took ~160ms and determinant took ~50ms in release mode and no debugger attached.
+
+# Compatibility
+it is compatible with portable .Net framwork (using in Android and IOS) and .NET 2.0 and higher without any changes.
