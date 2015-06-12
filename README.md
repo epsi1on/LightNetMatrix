@@ -2,10 +2,11 @@
 A simple, lightweight and resonably fast dense double matrix for .NET. All codes are packed inside a single class in single .cs file which makes it simply possible to include it into your C# code.
 
 ## Usages
-its very simple to use:
+its very simple to use. just note that indexes are *ZERO BASED!*
 
 ```c#
-Matrix m = RandomMatrix(5, 6);   //creates a new 5x6 matrix ( 5 row and 6 column )
+Matrix m = RandomMatrix(5, 6);   // creates a new 5x6 matrix ( 5 row and 6 column )
+m[3, 4] = 1.23;                  // sets the member at 3'rd row and 4'th column to 1.23
 Matrix inv = m.Inverse();        // computes inverse of m into inv
 double det = m.Determinant();    // computes determinant of m into det
 
