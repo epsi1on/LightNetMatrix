@@ -1,5 +1,5 @@
 # LightNetMatrix
-A simple, lightweight and fast mass double matrix for .NET. All codes are packed inside a single class in single .cs file which makes it simply possible to include it into your C# code.
+A simple, lightweight and resonably fast dense double matrix for .NET. All codes are packed inside a single class in single .cs file which makes it simply possible to include it into your C# code.
 
 #Features
 - Reasonable Performance
@@ -15,4 +15,7 @@ A simple, lightweight and fast mass double matrix for .NET. All codes are packed
 Because of using one dimensional array for storing data, performance is far higher than 2d array in .NET and is somehow around jagged array. Anyways time consuming parts (like inverse and determinant) are not highly optimized for performance. On a i7 pc inverse of matrix of 300x300 took ~160ms and determinant took ~50ms in release mode and no debugger attached.
 
 # Compatibility
-it is compatible with portable .Net framwork (using in Android and IOS) and .NET 2.0 and higher without any changes.
+it is compatible with portable .Net framwork (using in Android and IOS) and .NET 2.0+ without any changes.
+
+#Notes
+If you are dealing with very large matrixes, you maybe have to use sparse matrix instead of dense matrix and also if you are trying to solve a large equation system with inversing the matrix, you maybe should use other methods like cholesky decomposition or other ones (see [this guidline!](http://www.johndcook.com/blog/2010/01/19/dont-invert-that-matrix/)). For sparse matrix library in .NET Csparse.net is a wonderfull one with cholesky decomposition!
