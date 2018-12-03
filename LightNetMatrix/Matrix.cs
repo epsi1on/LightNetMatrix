@@ -1062,5 +1062,18 @@ namespace LightNetMatrix
 
             return v1 * v2 * v3;
         }
+
+        public static Matrix FromColMajorMatrix(int rowCount,int colCount, double[] coreArr)
+        {
+            var buf = new Matrix(rowCount, colCount);
+
+            for (var i = 0; i < rowCount; i++)
+                for (var j = 0; j < colCount; j++)
+                {
+                    buf[i, j] = coreArr[j * rowCount + i];
+                }
+
+            return buf;
+        }
     }
 }
