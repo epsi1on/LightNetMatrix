@@ -25,7 +25,10 @@ namespace LightNetMatrix
             this.rowCount = rowCount;
             this.columnCount = columnCount;
 
-            this.coreArray = new double[rowCount*columnCount];
+            this.coreArray = new double[rowCount][];
+
+            for (var i = 0; i < rowCount; i++)
+                this.coreArray[i] = new double[columnCount];
         }
 
         /// <summary>
@@ -37,12 +40,12 @@ namespace LightNetMatrix
         }
 
 
-        public double[] coreArray;
+        public double[][] coreArray;
 
         /// <summary>
         /// Gets the number of rows of the matrix.
         /// </summary>
-        
+
         public int RowCount
         {
             get { return rowCount; }
@@ -85,7 +88,8 @@ namespace LightNetMatrix
                 if (row >= this.RowCount || column >= this.ColumnCount)
                     throw new Exception("Invalid column or row specified");
 
-                return this.coreArray[column*this.rowCount + row];
+                //return this.coreArray[column * this.rowCount + row];
+                return this.coreArray[row][column];
             }
 
             set
@@ -93,7 +97,7 @@ namespace LightNetMatrix
                 if (row >= this.RowCount || column >= this.ColumnCount)
                     throw new Exception("Invalid column or row specified");
 
-                this.coreArray[column*this.rowCount + row] = value;
+                this.coreArray[row][column] = value;
             }
         }
 
@@ -110,14 +114,32 @@ namespace LightNetMatrix
 
             var res = new Matrix(m1.RowCount, m2.ColumnCount);
 
-            for (int i = 0; i < m1.rowCount; i++)
-                for (int j = 0; j < m2.columnCount; j++)
-                    for (int k = 0; k < m1.columnCount; k++)
+            var m1a = m1.coreArray;
+            var m2a = m2.coreArray;
+            var resa = res.coreArray;
+
+            var v1 = m1.rowCount;
+            var v2 = m2.columnCount;
+            var v3 = m1.columnCount;
+
+            for (int i = 0; i < v1; i++)
+            {
+                var resi = resa[i];
+                var m1i = m1a[i];
+
+                for (int j = 0; j < v2; j++)
+                    for (int k = 0; k < v3; k++)
                     {
-                        res.coreArray[j*res.rowCount + i] +=
-                            m1.coreArray[k*m1.rowCount + i]*
-                            m2.coreArray[j*m2.rowCount + k];
+                        //res.coreArray[j * res.rowCount + i] +=
+                        resi[j] +=
+                            //m1.coreArray[k * m1.rowCount + i] *
+                            m1i[k] *
+                            //m2.coreArray[j * m2.rowCount + k];
+                            m2a[k][j];
                     }
+
+            }
+
 
 
             return res;
@@ -146,7 +168,8 @@ namespace LightNetMatrix
 
             for (int i = 0; i < mtx.RowCount; i++)
                 for (int j = 0; j < mtx.ColumnCount; j++)
-                    buf[i, j] = mtx.coreArray[j*mtx.RowCount + i];
+                    //buf[i, j] = mtx.coreArray[j * mtx.RowCount + i];
+                    buf[i, j] = mtx.coreArray[i][j];
 
             return buf;
         }
@@ -161,7 +184,8 @@ namespace LightNetMatrix
             var buf = new Matrix(n, n);
 
             for (int i = 0; i < n; i++)
-                buf.coreArray[i*n + i] = 1.0;
+                //buf.coreArray[i * n + i] = 1.0;
+                buf.coreArray[i][i] = 1.0;
 
             return buf;
         }
@@ -197,8 +221,13 @@ namespace LightNetMatrix
         {
             var buf = new Matrix(m, n);
 
-            for (int i = 0; i < m*n; i++)
-                buf.coreArray[i] = 1.0;
+            //for (int i = 0; i < m*n; i++)
+            //buf.coreArray[i] = 1.0;
+            var arr = buf.coreArray;
+
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < arr[i].Length; j++)
+                    arr[i][j] = 1.0;
 
             return buf;
         }
@@ -212,8 +241,14 @@ namespace LightNetMatrix
         {
             var buf = new Matrix(n);
 
-            for (int i = 0; i < n*n; i++)
-                buf.coreArray[i] = 1.0;
+            //for (int i = 0; i < n * n; i++)
+            //    buf.coreArray[i] = 1.0;
+
+            var arr = buf.coreArray;
+
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < arr[i].Length; j++)
+                    arr[i][j] = 1.0;
 
             return buf;
         }
@@ -229,7 +264,7 @@ namespace LightNetMatrix
 
             for (int i = 0; i < dim; i++)
             {
-                buf *= this.coreArray[i*this.RowCount + i];
+                buf *= this.coreArray[i][i];
             }
 
             return buf;
@@ -258,18 +293,20 @@ namespace LightNetMatrix
         /// </returns>
         public static Matrix operator *(double coeff, Matrix mat)
         {
-            var newMat = new double[mat.RowCount*mat.ColumnCount];
+            //var newMat = new double[mat.RowCount*mat.ColumnCount];
 
 
-            for (int i = 0; i < newMat.Length; i++)
-            {
-                newMat[i] = coeff*mat.coreArray[i];
-            }
+            //for (int i = 0; i < newMat.Length; i++)
+            //    newMat[i] = coeff*mat.coreArray[i];
 
-            var buf = new Matrix(mat.RowCount, mat.ColumnCount);
-            buf.coreArray = newMat;
+            var buf = mat.Clone();
+
+            for (int i = 0; i < buf.rowCount; i++)
+                for (int j = 0; j < buf.coreArray[i].Length; j++)
+                    buf.coreArray[i][j] *= coeff;
 
             return buf;
+
         }
 
         /// <summary>
@@ -282,16 +319,24 @@ namespace LightNetMatrix
         /// </returns>
         public static Matrix operator *(Matrix mat, double coeff)
         {
-            var newMat = new double[mat.RowCount*mat.ColumnCount];
+            //var newMat = new double[mat.RowCount*mat.ColumnCount];
 
 
-            for (int i = 0; i < newMat.Length; i++)
-            {
-                newMat[i] = coeff*mat.coreArray[i];
-            }
+            //for (int i = 0; i < newMat.Length; i++)
+            //{
+            //    newMat[i] = coeff*mat.coreArray[i];
+            //}
 
-            var buf = new Matrix(mat.RowCount, mat.ColumnCount);
-            buf.coreArray = newMat;
+            //var buf = new Matrix(mat.RowCount, mat.ColumnCount);
+            //buf.coreArray = newMat;
+
+            //return buf;
+
+            var buf = mat.Clone();
+
+            for (int i = 0; i < buf.rowCount; i++)
+                for (int j = 0; j < buf.coreArray[i].Length; j++)
+                    buf.coreArray[i][j] *= coeff;
 
             return buf;
         }
@@ -305,13 +350,12 @@ namespace LightNetMatrix
         /// </returns>
         public static Matrix operator -(Matrix mat)
         {
-            var buf = new Matrix(mat.RowCount, mat.ColumnCount);
-            ;
+            var buf = mat.Clone();// new Matrix(mat.RowCount, mat.ColumnCount);
 
-            for (int i = 0; i < buf.coreArray.Length; i++)
-            {
-                buf.coreArray[i] = -mat.coreArray[i];
-            }
+
+            for (int i = 0; i < buf.rowCount; i++)
+                for (int j = 0; j < buf.coreArray[i].Length; j++)
+                    buf.coreArray[i][j] *= -1;
 
             return buf;
         }
@@ -331,10 +375,16 @@ namespace LightNetMatrix
 
             var buf = new Matrix(mat1.RowCount, mat1.ColumnCount);
 
-            for (int i = 0; i < buf.coreArray.Length; i++)
-            {
-                buf.coreArray[i] = mat1.coreArray[i] + mat2.coreArray[i];
-            }
+            var n = mat1.rowCount;
+            var m = mat1.columnCount;
+
+            //for (int i = 0; i < buf.coreArray.Length; i++)
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                {
+                    //buf.coreArray[i] = mat1.coreArray[i] + mat2.coreArray[i];
+                    buf.coreArray[i][j] = mat1.coreArray[i][j] + mat2.coreArray[i][j];
+                }
 
             return buf;
         }
@@ -354,10 +404,16 @@ namespace LightNetMatrix
 
             var buf = new Matrix(mat1.RowCount, mat1.ColumnCount);
 
-            for (int i = 0; i < buf.coreArray.Length; i++)
-            {
-                buf.coreArray[i] = mat1.coreArray[i] - mat2.coreArray[i];
-            }
+            var n = mat1.rowCount;
+            var m = mat1.columnCount;
+
+            //for (int i = 0; i < buf.coreArray.Length; i++)
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                {
+                    //buf.coreArray[i] = mat1.coreArray[i] + mat2.coreArray[i];
+                    buf.coreArray[i][j] = mat1.coreArray[i][j] - mat2.coreArray[i][j];
+                }
 
             return buf;
         }
@@ -399,9 +455,12 @@ namespace LightNetMatrix
             if (values.Length != this.ColumnCount)
                 throw new ArgumentOutOfRangeException("values");
 
-            for (int j = 0; j < this.ColumnCount; j++)
+            Array.Copy(values, this.coreArray[i], values.Length);
+
+            //for (int j = 0; j < this.ColumnCount; j++)
             {
-                this.coreArray[j * this.RowCount + i] = values[j];
+                //this.coreArray[j * this.RowCount + i] = values[j];
+                //this.coreArray[i][j] = values[j];
             }
         }
 
@@ -419,7 +478,8 @@ namespace LightNetMatrix
 
             for (int i = 0; i < this.RowCount; i++)
             {
-                this.coreArray[j * this.RowCount + i] = values[i];
+                //this.coreArray[j * this.RowCount + i] = values[i];
+                this.coreArray[i][j] = values[i];
             }
         }
 
@@ -431,8 +491,24 @@ namespace LightNetMatrix
         {
             var buf = new Matrix(this.RowCount, this.ColumnCount);
 
-            buf.coreArray = (double[])this.coreArray.Clone();
+            var source = this.coreArray;
+            var dest = buf.coreArray;
+
+            var len = source.Length;
+
+            for (var x = 0; x < len; x++)
+            {
+                var src = source[x];
+                var tgt = dest[x];
+                var ilen = source[x].Length;
+
+                Array.Copy(src, tgt, ilen);
+            }
+
             return buf;
+
+            //buf.coreArray = (double[])this.coreArray.Clone();
+            //return buf;
         }
 
         /// <summary>
@@ -445,10 +521,16 @@ namespace LightNetMatrix
 
             var newMatrix = buf.coreArray;
 
-            for (int row = 0; row < this.RowCount; row++)
-                for (int column = 0; column < this.ColumnCount; column++)
+
+            for (int i = 0; i < buf.RowCount; i++)
+                for (int j = 0; j < buf.ColumnCount; j++)
                     //newMatrix[column*this.RowCount + row] = this.coreArray[row*this.RowCount + column];
-                    buf[column, row] = this[row, column];
+                    buf[i, j] = this[j, i];
+
+            // for (int row = 0; row < this.RowCount; row++)
+            // for (int column = 0; column < this.ColumnCount; column++)
+            //newMatrix[column*this.RowCount + row] = this.coreArray[row*this.RowCount + column];
+            // buf[column, row] = this[row, column];
 
             buf.coreArray = newMatrix;
             return buf;
@@ -462,11 +544,24 @@ namespace LightNetMatrix
             if (other.ColumnCount != this.ColumnCount)
                 return false;
 
+            var n = other.rowCount;
+            var m = other.columnCount;
+
+            /*
             for (int i = 0; i < other.coreArray.Length; i++)
             {
                 if (!FuzzyEquals(this.coreArray[i], other.coreArray[i]))
                     return false;
             }
+            */
+
+
+            for (int i = 0; i < n; i++)
+                for (int j = 0; j < m; j++)
+                {
+                    if (!FuzzyEquals(this.coreArray[i][j], other.coreArray[i][j]))
+                        return false;
+                }
 
             return true;
         }
@@ -508,7 +603,8 @@ namespace LightNetMatrix
         {
             for (int j = 1; j <= columnCount; j++)
                 for (int i = j + 1; i <= rowCount; i++)
-                    if (!FuzzyEquals(this.coreArray[j * this.RowCount + i], 0))
+                    //if (!FuzzyEquals(this.coreArray[j * this.RowCount + i], 0))
+                    if (!FuzzyEquals(this.coreArray[i][j], 0))
                         return false;
 
             return true;
@@ -522,7 +618,8 @@ namespace LightNetMatrix
         {
             for (int i = 1; i <= rowCount; i++)
                 for (int j = i + 1; j <= columnCount; j++)
-                    if (!FuzzyEquals(this.coreArray[j*this.RowCount + i], 0.0))
+                    //if (!FuzzyEquals(this.coreArray[j * this.RowCount + i], 0.0))
+                    if (!FuzzyEquals(this.coreArray[i][j], 0.0))
                         return false;
 
             return true;
@@ -578,6 +675,11 @@ namespace LightNetMatrix
             if (i1 == i2)
                 return;
 
+            var buff = this.coreArray[i1];
+            this.coreArray[i1] = this.coreArray[i2];
+            this.coreArray[i2] = buff;
+
+            /*
             for (int i = 0; i < columnCount; i++)
             {
                 var tmp = this[i1, i];
@@ -585,6 +687,7 @@ namespace LightNetMatrix
                 this[i1, i] = this[i2, i];
                 this[i2, i] = tmp;
             }
+            */
         }
 
         /// <summary>
@@ -601,11 +704,19 @@ namespace LightNetMatrix
             if (j1 == j2)
                 return;
 
-            var j1Col = this.ExtractColumn(j1).coreArray;
-            var j2Col = this.ExtractColumn(j2).coreArray;
+            for (int i = 0; i < rowCount; i++)
+            {
+                var tmp = this.coreArray[i][j1];
 
-            this.SetRow(j1, j2Col);
-            this.SetRow(j2, j1Col);
+                this.coreArray[i][j1] = this.coreArray[i][j2];
+                this.coreArray[i][j2] = tmp;
+            }
+
+            //var j1Col = this.ExtractColumn(j1).coreArray;
+            //var j2Col = this.ExtractColumn(j2).coreArray;
+
+            //this.SetRow(j1, j2Col);
+            //this.SetRow(j2, j1Col);
         }
 
         /// <summary>
@@ -620,11 +731,12 @@ namespace LightNetMatrix
 
             var mtx = new Matrix(1, this.ColumnCount);
 
+            Array.Copy(this.coreArray[0], mtx.coreArray[0], this.coreArray[0].Length);
 
-            for (int j = 0; j < this.ColumnCount; j++)
-            {
-                mtx.coreArray[j] = this.coreArray[j * this.RowCount + i];
-            }
+            //for (int j = 0; j < this.ColumnCount; j++)
+            //{
+            //    mtx.coreArray[j] = this.coreArray[j * this.RowCount + i];
+            //}
 
             return mtx;
         }
@@ -644,7 +756,7 @@ namespace LightNetMatrix
 
             for (int i = 0; i < this.RowCount; i++)
             {
-                mtx.coreArray[i] = this.coreArray[j * this.RowCount + i];
+                mtx.coreArray[i][0] = this.coreArray[i][j];
             }
 
             return mtx;
@@ -697,11 +809,13 @@ namespace LightNetMatrix
 
                 for (var j = i + 1; j < n; j++)
                 {
-                    var alfa = (clone.coreArray[j * n + i] / clone.coreArray[i * n + i]);
+                    //var alfa = (clone.coreArray[j * n + i] / clone.coreArray[i * n + i]);
+                    var alfa = (clone.coreArray[i][j] / clone.coreArray[i][i]);
 
                     for (var k = i; k < n; k++)
                     {
-                        clone.coreArray[j * n + k] -= alfa * clone.coreArray[i * n + k];
+                        //clone.coreArray[j * n + k] -= alfa * clone.coreArray[i * n + k];
+                        clone.coreArray[k][j] -= alfa * clone.coreArray[k][i];
                     }
                 }
             }
@@ -711,7 +825,8 @@ namespace LightNetMatrix
             var arr = new double[n];
 
             for (var i = 0; i < n; i++)
-                arr[i] = clone.coreArray[i * n + i];
+                //arr[i] = clone.coreArray[i * n + i];
+                arr[i] = clone.coreArray[i][i];
 
             Array.Sort(arr);
 
@@ -729,6 +844,20 @@ namespace LightNetMatrix
             {
                 if (Math.Abs(d) < min)
                     min = Math.Abs(d);
+            }
+
+            return min;
+        }
+
+        private static double MinAbs(double[][] arr)
+        {
+            var min = double.MaxValue;
+
+            foreach (var a in arr)
+            {
+                foreach (var d in a)
+                    if (Math.Abs(d) < min)
+                        min = Math.Abs(d);
             }
 
             return min;
@@ -764,12 +893,14 @@ namespace LightNetMatrix
             {
                 for (var i = j + 1; i < n; i++)
                 {
-                    if (System.Math.Abs(clonea[j + j * n]) < epsi1on)
+                    //if (System.Math.Abs(clonea[j + j * n]) < epsi1on)
+                    if (System.Math.Abs(clonea[j][j]) < epsi1on)
                     {
                         var firstNonZero = -1;
 
                         for (var k = j + 1; k < n; k++)
-                            if (System.Math.Abs(clonea[k + j * n]) > epsi1on)
+                            //if (System.Math.Abs(clonea[k + j * n]) > epsi1on)
+                            if (System.Math.Abs(clonea[k][j]) > epsi1on)
                                 firstNonZero = k;
 
                         if (firstNonZero == -1)
@@ -784,12 +915,16 @@ namespace LightNetMatrix
                         }
                     }
 
-                    var alfa = clonea[i + j * n] / clonea[j + j * n];
+                    //var alfa = clonea[i + j * n] / clonea[j + j * n];
+                    var alfa = clonea[i][j] / clonea[j][j];
 
                     for (var k = 0; k < n; k++)
                     {
-                        clonea[i + k * n] -= alfa * clonea[j + k * n];
-                        eyea[i + k * n] -= alfa * eyea[j + k * n];
+                        //clonea[i + k * n] -= alfa * clonea[j + k * n];
+                        clonea[i][k] -= alfa * clonea[j][k];
+
+                        //eyea[i + k * n] -= alfa * eyea[j + k * n];
+                        eyea[i][k] -= alfa * eyea[j][k];
                     }
                 }
             }
@@ -800,12 +935,14 @@ namespace LightNetMatrix
             {
                 for (var i = j - 1; i >= 0; i--)
                 {
-                    if (System.Math.Abs(clonea[j + j * n]) < epsi1on)
+                    //if (System.Math.Abs(clonea[j + j * n]) < epsi1on)
+                    if (System.Math.Abs(clonea[j][j]) < epsi1on)
                     {
                         var firstNonZero = -1;
 
                         for (var k = j - 1; k >= 0; k--)
-                            if (System.Math.Abs(clonea[k + j * n]) > epsi1on)
+                            //if (System.Math.Abs(clonea[k + j * n]) > epsi1on)
+                            if (System.Math.Abs(clonea[k][j]) > epsi1on)
                                 firstNonZero = k;
 
                         if (firstNonZero == -1)
@@ -820,12 +957,16 @@ namespace LightNetMatrix
                         }
                     }
 
-                    var alfa = clonea[i + j * n] / clonea[j + j * n];
+                    //var alfa = clonea[i + j * n] / clonea[j + j * n];
+                    var alfa = clonea[i][j] / clonea[j][j];
 
                     for (var k = n - 1; k >= 0; k--)
                     {
-                        clonea[i + k * n] -= alfa * clonea[j + k * n];
-                        eyea[i + k * n] -= alfa * eyea[j + k * n];
+                        //clonea[i + k * n] -= alfa * clonea[j + k * n];
+                        clonea[i][k] -= alfa * clonea[j][k];
+
+                        //eyea[i + k * n] -= alfa * eyea[j + k * n];
+                        eyea[i][k] -= alfa * eyea[j][k];
                     }
                 }
             }
@@ -834,12 +975,16 @@ namespace LightNetMatrix
 
             for (var i = 0; i < n; i++)
             {
-                var alfa = 1 / clonea[i + i * n];
+                //var alfa = 1 / clonea[i + i * n];
+                var alfa = 1 / clonea[i][i];
 
                 for (var j = 0; j < n; j++)
                 {
-                    clonea[i + j * n] *= alfa;
-                    eyea[i + j * n] *= alfa;
+                    //clonea[i + j * n] *= alfa;
+                    clonea[i][j] *= alfa;
+
+                    //eyea[i + j * n] *= alfa;
+                    eyea[i][j] *= alfa;
                 }
             }
 
@@ -847,7 +992,7 @@ namespace LightNetMatrix
 
             return eye;
         }
-        
+
 
         /// <summary>
         /// determines the equation of parameters with fuzzy approach.
@@ -866,5 +1011,56 @@ namespace LightNetMatrix
         /// The Threshold of equality of two double precision members.
         /// </summary>
         public double Epsilon = 1e-12;
+
+        /// <summary>
+        /// multiply two matrixes in a cache friendly way. for large matrixes it does have benefits
+        /// </summary>
+        /// <param name="mat1"></param>
+        /// <param name="mat2"></param>
+        /// <returns></returns>
+        public static Matrix FastMultiply(Matrix mat1, Matrix mat2)
+        {
+            ThrowIf(mat1.RowCount != mat2.RowCount || mat1.ColumnCount != mat2.ColumnCount,
+                "Inconsistent matrix sizes");
+
+            var buf = new Matrix(mat1.RowCount, mat2.ColumnCount);
+
+            var m2c = mat2.Transpose();
+
+            //var n = mat1.rowCount;
+            //var m = mat1.columnCount;
+
+            for (int i = 0; i < mat1.rowCount; i++)
+                for (int j = 0; j < mat2.columnCount; j++)
+                {
+                    var dotProd = DotProd(mat1.coreArray[i], mat2.coreArray[j]);
+                }
+
+            //var dotProd = DotProd(mat1.coreArray[i], m2c.coreArray[i]);
+            //buf.coreArray[i][j] = dotProd;
+            //}
+            //for (int j = 0; j < m; j++)
+            //buf.coreArray[i][j] = mat1.coreArray[i][j] + mat2.coreArray[i][j];
+
+            return buf;
+        }
+
+        private static double DotProd(double[] a1, double[] a2)
+        {
+            var n = a1.Length % 3;
+
+            var v1 = 0.0;
+            var v2 = 0.0;
+            var v3 = 0.0;
+
+            for (var i = 0; i < n; i += 3)
+            {
+                v1 += a1[i] * a2[i];
+                v2 += a1[i + 1] * a2[i + 1];
+                v3 += a1[i + 2] * a2[i + 2];
+            }
+
+            return v1 * v2 * v3;
+        }
     }
 }
