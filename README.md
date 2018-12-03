@@ -1,6 +1,18 @@
 # LightNetMatrix
 A simple, lightweight and resonably fast dense double matrix for .NET. All codes are packed inside a single class in single .cs file which makes it simply possible to include it into your C# code.
 
+## Usages
+its very simple to use. just note that indexes are *ZERO BASED!*
+
+```c#
+Matrix m = RandomMatrix(5, 6);   // creates a new 5x6 matrix ( 5 row and 6 column )
+m[3, 4] = 1.23;                  // sets the member at 3'rd row and 4'th column to 1.23
+Matrix inv = m.Inverse();        // computes inverse of m into inv
+double det = m.Determinant();    // computes determinant of m into det
+```
+
+All you have to do is to copy code inside [Matrix.cs file](/LightNetMatrix/Matrix.cs) into your codes and go!
+
 #Features
 - Reasonable Performance
 - Determinant of square Matrix
@@ -11,10 +23,10 @@ A simple, lightweight and resonably fast dense double matrix for .NET. All codes
 - CLS Compliant.
 - Serializable (both xml and binary)
 
-#Performance
+## Performance
 Because of using one dimensional array for storing data, performance is far higher than 2d array in .NET and is somehow around jagged array. Anyways time consuming parts (like inverse and determinant) are not highly optimized for performance. On a i7 pc inverse of matrix of 300x300 took ~160ms and determinant took ~50ms in release mode and no debugger attached.
 
-# Compatibility
+## Compatibility
 it is compatible with portable .Net framwork (using in Android and IOS) and .NET 2.0+ without any changes.
 
 #Notes
