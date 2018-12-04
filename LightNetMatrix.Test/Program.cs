@@ -11,11 +11,11 @@ namespace LightNetMatrix.Test
         {
             //TestInverse(1000);
 
-            //TestLargeMultiply(1300, 1300, 1300, true);
+            TestLargeMultiply(1, 1300, 1300, true);
 
             //TestInitiation(20000, 20000);
 
-
+            Testrtxr(1500, true);
 
             Console.ReadKey();
         }
@@ -74,6 +74,8 @@ namespace LightNetMatrix.Test
             Matrix mtx1 = RandomMatrix(n, m);
             Matrix mtx2 = RandomMatrix(m, l);
 
+            mtx2 += mtx2.Transpose();
+
             var sp1 = 0.0;
             var sp2 = 0.0;
 
@@ -90,7 +92,7 @@ namespace LightNetMatrix.Test
             }
             
 
-            res2 = Matrix.FastMultiply(mtx1, mtx2);
+            res2 = Matrix.FastMultiply(mtx1, mtx2,true);
             Console.WriteLine($"fast multiply of {n}x{m} matrix by a {m}x{l} matrix tooks {sp2 = sp.ElapsedMilliseconds} milisecs");
 
             if (tryNormal)
@@ -123,8 +125,57 @@ namespace LightNetMatrix.Test
             Console.WriteLine($"memory in use {memory.ToByteSize()}");
         }
 
+        static void Testrtxr(int n, bool tryNormal)
+        {
+            var r = RandomMatrix(n, n);
+            var k = RandomMatrix(n, n);
+            k = k + k.Transpose();//to make k symmetric
 
-        
+            var zer = (k - k.Transpose()).MaxAbsMember();
+
+            var result = new Matrix(n, n);
+            Matrix res2 = null;
+
+
+            var sp = System.Diagnostics.Stopwatch.StartNew();
+
+            var sp1 = 0.0;
+            var sp2 = 0.0;
+
+            if (tryNormal)
+            {
+                var rt = r.Transpose();
+                //var m1 = Matrix.FastMultiply(rt, k);
+
+                res2 = rt * k * r;
+
+                Console.WriteLine($"R'*K*R of {n}x{n} matrixes tooks {sp1 = sp.ElapsedMilliseconds} milisecs");
+
+                res2.MaxAbsMember();
+
+                sp.Restart();
+            }
+
+            {
+                Matrix.RtXR_Operation(r, k, result);
+                Console.WriteLine($"RtXR_Operation(R,K) of {n}x{n} matrixes tooks {sp2 = sp.ElapsedMilliseconds} milisecs");
+                sp.Stop();
+            }
+
+
+            if (tryNormal)
+            {
+                var ratio = sp1 / sp2;
+                Console.WriteLine("fast opration is {0:00} times faster than normal operation!", ratio);
+            }
+
+            var zero = res2 - result;
+
+            var max = zero.MaxAbsMember();
+
+            Console.WriteLine("residual is {0:g2}!", max);
+        }
+
 
         static void TestCode()
         {

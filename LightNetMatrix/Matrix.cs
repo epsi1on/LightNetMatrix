@@ -1023,14 +1023,18 @@ namespace LightNetMatrix
         /// <param name="mat1"></param>
         /// <param name="mat2"></param>
         /// <returns></returns>
-        public static Matrix FastMultiply(Matrix mat1, Matrix mat2)
+        public static Matrix FastMultiply(Matrix mat1, Matrix mat2,bool mat2IsSymmetric = false)
         {
-            ThrowIf(mat1.RowCount != mat2.RowCount || mat1.ColumnCount != mat2.ColumnCount,
-                "Inconsistent matrix sizes");
+            //ThrowIf(mat1.RowCount != mat2.RowCount || mat1.ColumnCount != mat2.ColumnCount,
+            //    "Inconsistent matrix sizes");
+
+            if (mat1.ColumnCount != mat2.RowCount)
+                throw new InvalidOperationException("No consistent dimensions");
 
             var buf = new Matrix(mat1.RowCount, mat2.ColumnCount);
 
-            var m2c = mat2.Transpose();
+            Matrix m2c = mat2IsSymmetric?mat2:mat2.Transpose();
+
 
             for (int i = 0; i < mat1.rowCount; i++)
                 for (int j = 0; j < mat2.columnCount; j++)
@@ -1145,6 +1149,42 @@ namespace LightNetMatrix
                     buf[i, j] = core[i, j];
 
             return buf;
+        }
+
+
+        /// <summary>
+        /// does the r' . X . r multiply operation with fast methods, where X is symmetric
+        /// </summary>
+        /// <param name="r">the r matrix</param>
+        /// <param name="x">the x matrix, symmetric</param>
+        /// /// <param name="x">the result</param>
+        /// <returns></returns>
+        public static void RtXR_Operation(Matrix r, Matrix x, Matrix result)
+        {
+            var n = r.rowCount;
+
+            if (!r.IsSquare() || !x.IsSquare() || !result.IsSquare() || n != x.rowCount || n != result.rowCount)
+                throw new Exception();
+
+            var li = new double[n];
+
+
+            r.InPlaceTranspose();
+
+            for (var i = 0; i < n; i++)
+            {
+                #region computation of Li
+                for (var j = 0; j < n; j++)
+                    li[j] = DotProd(r.coreArray[i], x.coreArray[j]);
+                #endregion
+
+                for (var q = 0; q < n; q++)
+                {
+                    result[i, q] = DotProd(li, r.coreArray[q]);
+                }
+            }
+
+            r.InPlaceTranspose();
         }
     }
 }
