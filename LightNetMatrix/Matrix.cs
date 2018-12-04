@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml.Serialization;
+using System.Linq;
 
 namespace LightNetMatrix
 {
@@ -1027,40 +1028,45 @@ namespace LightNetMatrix
 
             var m2c = mat2.Transpose();
 
-            //var n = mat1.rowCount;
-            //var m = mat1.columnCount;
-
             for (int i = 0; i < mat1.rowCount; i++)
                 for (int j = 0; j < mat2.columnCount; j++)
                 {
-                    var dotProd = DotProd(mat1.coreArray[i], mat2.coreArray[j]);
+                    buf.coreArray[i][j] = DotProd(mat1.coreArray[i], m2c.coreArray[j]); ;
                 }
-
-            //var dotProd = DotProd(mat1.coreArray[i], m2c.coreArray[i]);
-            //buf.coreArray[i][j] = dotProd;
-            //}
-            //for (int j = 0; j < m; j++)
-            //buf.coreArray[i][j] = mat1.coreArray[i][j] + mat2.coreArray[i][j];
 
             return buf;
         }
 
         private static double DotProd(double[] a1, double[] a2)
         {
-            var n = a1.Length % 3;
+            /**/
+            var tt = 0.0;
+
+            for (var i = 0; i < a1.Length; i++)
+                tt += a1[i] * a2[i];
+
+            return tt;
+            /* */
+
+            var n = a1.Length - a1.Length%3;
 
             var v1 = 0.0;
             var v2 = 0.0;
             var v3 = 0.0;
 
-            for (var i = 0; i < n; i += 3)
+            for (var i = 0; i < n; i+=3)
             {
                 v1 += a1[i] * a2[i];
                 v2 += a1[i + 1] * a2[i + 1];
                 v3 += a1[i + 2] * a2[i + 2];
             }
 
-            return v1 * v2 * v3;
+            for (var i = n; i < a1.Length; i++)
+            {
+                v1 += a1[i] * a2[i];
+            }
+
+            return v1 + v2 + v3;
         }
 
         public static Matrix FromColMajorMatrix(int rowCount,int colCount, double[] coreArr)
@@ -1075,5 +1081,42 @@ namespace LightNetMatrix
 
             return buf;
         }
+
+
+        /// <summary>
+        /// Does the transpose operation inplace
+        /// </summary>
+        public void InPlaceTranspose()
+        {
+            if (!this.IsSquare())
+                throw new Exception();
+
+            var n = this.rowCount;
+
+            for (var i = 0; i < n; i++)
+                for (var j = 0; j < i; j++)
+                {
+                    if (i == j)
+                        continue;
+
+                    var vij = this[i, j];
+                    var vji = this[j, i];
+
+                    this[i, j] = vji;
+                    this[j, i] = vij;
+                }
+        }
+
+        /// <summary>
+        /// the ABS Maximum of members
+        /// </summary>
+        /// <returns></returns>
+        public double MaxAbsMember()
+        {
+            var max = this.coreArray.Max(i => i.Max(j => Math.Abs(j)));
+
+            return max;
+        }
+
     }
 }

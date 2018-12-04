@@ -9,11 +9,13 @@ namespace LightNetMatrix.Test
     {
         static void Main(string[] args)
         {
-            TestInverse(1000);
+            //TestInverse(1000);
 
-            TestLargeMultiply(1200, 1200, 1200, true);
+            TestLargeMultiply(1300, 1300, 1300, true);
 
-            TestInitiation(20000, 20000);
+            //TestInitiation(20000, 20000);
+
+
 
             Console.ReadKey();
         }
@@ -72,23 +74,23 @@ namespace LightNetMatrix.Test
             Matrix mtx1 = RandomMatrix(n, m);
             Matrix mtx2 = RandomMatrix(m, l);
 
-            //for (int i = 0; i < n; i++)
-            //    m[i, i] = 0.0;
-
             var sp1 = 0.0;
             var sp2 = 0.0;
 
             var sp = System.Diagnostics.Stopwatch.StartNew();
 
-            if(tryNormal)
+            Matrix res1 = null;
+            Matrix res2 = null;
+
+            if (tryNormal)
             {
-                var mlp1 = Matrix.Multiply(mtx1, mtx2);
+                res1 = Matrix.Multiply(mtx1, mtx2);
                 Console.WriteLine($"multiply of {n}x{m} matrix by a {m}x{l} matrix tooks {sp1 = sp.ElapsedMilliseconds} milisecs");
                 sp.Restart();
             }
             
 
-            var mlp2 = Matrix.FastMultiply(mtx1, mtx2);
+            res2 = Matrix.FastMultiply(mtx1, mtx2);
             Console.WriteLine($"fast multiply of {n}x{m} matrix by a {m}x{l} matrix tooks {sp2 = sp.ElapsedMilliseconds} milisecs");
 
             if (tryNormal)
@@ -96,9 +98,15 @@ namespace LightNetMatrix.Test
                 var ratio = sp1 / sp2;
 
                 Console.WriteLine("fast multiply is {0:00} times faster than normal multiply!", ratio);
+
+                var zero = res2 - res1;
+
+                var residual = zero.MaxAbsMember();
+
+                Console.WriteLine("residual is {0:g2}!", residual);
             }
-            
-            
+
+           
         }
 
         static void TestInitiation(int n,int m)
@@ -115,12 +123,14 @@ namespace LightNetMatrix.Test
             Console.WriteLine($"memory in use {memory.ToByteSize()}");
         }
 
+
+      
+
         static void TestCode()
         {
             Matrix m = RandomMatrix(5, 6);
 
             m[3, 4] = 1.0;
-            
 
             Matrix inv = m.Inverse();
         }
