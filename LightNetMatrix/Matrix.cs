@@ -40,6 +40,10 @@ namespace LightNetMatrix
         {
         }
 
+        private Matrix()
+        {
+
+        }
 
         public double[][] coreArray;
 
@@ -1118,5 +1122,29 @@ namespace LightNetMatrix
             return max;
         }
 
+        public static Matrix FromJagged(double[][] core)
+        {
+            var buf = new Matrix();
+            buf.rowCount = core.Length;
+            buf.columnCount = core[0].Length;
+            buf.coreArray = core;
+
+
+            return buf;
+        }
+
+        public static Matrix From2D(double[,] core)
+        {
+            var rowCount = core.GetLength(0);
+            var columnCount = core.GetLength(1);
+
+            var buf = new Matrix(rowCount, columnCount);
+
+            for (var i = 0; i < rowCount; i++)
+                for (var j = 0; j < columnCount; j++)
+                    buf[i, j] = core[i, j];
+
+            return buf;
+        }
     }
 }

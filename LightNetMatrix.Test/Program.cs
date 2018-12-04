@@ -11,7 +11,7 @@ namespace LightNetMatrix.Test
         {
             //TestInverse(1000);
 
-            TestLargeMultiply(1300, 1300, 1300, true);
+            //TestLargeMultiply(1300, 1300, 1300, true);
 
             //TestInitiation(20000, 20000);
 
@@ -124,7 +124,7 @@ namespace LightNetMatrix.Test
         }
 
 
-      
+        
 
         static void TestCode()
         {
